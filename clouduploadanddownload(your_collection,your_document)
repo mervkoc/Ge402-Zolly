@@ -1,0 +1,51 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Feb 15 22:30:49 2024
+
+@author: HP
+"""
+# print('Data uploaded successfully.')
+from google.cloud import firestore
+from google.oauth2 import service_account
+
+
+# Specify the path to your service account key file
+service_account_path = 'C:\\Users\\HP\\anaconda3\\Lib\\site-packages\\zollyapp-6ef028f890fb.json'
+
+# Explicitly use the service account credentials
+credentials = service_account.Credentials.from_service_account_file(service_account_path)
+db = firestore.Client(credentials=credentials, project=credentials.project_id)
+
+data = {
+    'lat': 39.897957,
+    'lng': -77.036560
+}
+
+# Reference to the collection and document
+doc_ref = db.collection('your_collection').document('your_document')
+
+# Upload the data
+doc_ref.set(data)
+
+print('Data uploaded successfully.')
+
+
+collection_name = 'your_collection'
+document_name = 'your_document'
+
+# Get a reference to the document
+doc_ref = db.collection(collection_name).document(document_name)
+
+# Attempt to fetch the document
+try:
+    doc = doc_ref.get()
+    if doc.exists:
+        print(f'Document data: {doc.to_dict()}')
+        data = doc.to_dict()
+    else:
+        print('No such document!')
+except Exception as e:
+    print(f'An error occurred: {e}')
+    
+lattitude = data['lat']
+longtitude = data['lng']
