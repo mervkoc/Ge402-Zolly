@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "zollyapp",
+  "private_key_id": "6ef028f890fbae47cb72351191e9f79eff718982",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCoh29kEXu7QJqy\nT9BJE84pNn7q+pdJjHKROehMZX00JHdI4yZLCZh5A1DTKVCUCAG5ws/VWAsyIURQ\nn78FmOIEEgRXgFoDZVA6mNPRNiAErlsNmgigScVOQS7Wj+fcSlC7ktJkQTzIPp+d\nISmfsikVzWjFPGx6lgE/7m+fRZPCTlpoZp/aPwsCg9M2tv+IekBwEa7oqXYzSdye\nLQP/nVirdvPE47PKSNjpSWRxCcCiwNHMpd4Deo9u5DizIbQFjdbs9RCc80SgsUxQ\nBmPPQeOoKMTUS3M6FGPPNvAhXKtj49BqTQxFkEh0E3ngfvyHEQe9ntAeXWfpWFPn\nXoio7kaVAgMBAAECggEACDwB2dJZiNc0bST63i83t191yRZwa5lkrwA01P1v0NXn\n9tQ+dpPOnY8SFRc43DAd9s0e1DjxPG76rwkhz2yzvROCSczi2Qqgu77kOUiF56Sl\n8fQGRYqv4iMg3j6kIL6IKPoYtJRUG3alMYtsGg+dnqFC5BblOAIkp9KHJVxEHCNy\nowwi6DEo7E78qq3ZGIc8P+/7C357bPiYNgmpixLUN5+Wt2D3+3XTXJ+UwpkSv7au\nGlapB/ISdWxmgyrIY8DdSSZ2OpPLU4BrHGSrfmPjtEhn/XMYduvnF7/+WrHculEO\nei0YFYaN9gnIHoRMTUnBzQW4+/X4z7NqgFGkRDS8WwKBgQDUCFblFAKAMFGz1V59\nIpoJGwZi0PJvGYY+4EkVdHlpiS3phswfvjSCCQ/0839of3QG04CKN5UTtK4Oz0XK\nujqW4ksSI0jqcQnHkn87DCiyN7tB54wHJn7rg5+VhOGxuuJQ72JJtV+VMoMt7MYR\n+rlxxxkp4d/lBNYtRy6kgY4YpwKBgQDLebqXQ/WYLLA50NQ+XE8lPL+yTjImmmHQ\ngpgOhC6VaW0OG/Qo+ovz3fNRqAFGqP0MVz9p1vlYHKLeVfizWsLWkLM8yjjuHZtl\n0PxUNTeXdoWAAUYO0Xqv2G+E7XK/O2rUbkDT3KkjxcLqnugIOlbwaafTYLIpGX6M\n7KFrvakSYwKBgH7dwohssZZb0vcEKvY6tunN1sNXfEeHgTCr6G7C80Z3QxZghlBT\n8X0AySBqdYhkAlt3P4jz+uoAiMjpsju7tATFv99JZ36HRi+4cxI0k0EXYZ7sWXeJ\nzBVE+z5udNBwHqwIn8m0kU1nHOBktJrbZwwx8deChAG3JCORXNInhosvAoGAFCcj\nVvYRLhhHAALx8pc784k3x1Y9W1txErDMlKt83amKdppILYLbN7Uk81J7hd8Y6Q7/\nJeF34sU7UGAdeM4lfBDq37t7tgHSsVvokgKPVf4ULOBzauZOi3oZWYYXFl+xLgcZ\nfqJdUkC1FH3Wp3H3yGn+iE4Md0uiIB0Tw9MOGtcCgYEAnbyLlb46bnOyLG1wzT0o\n8Sr42ZhAuTKDU0YLEtuCnhmA2fJN8lc4j0GWwyIYBh60+RTWnOXIfW1kRo6voj+A\n1L3pkAVydOfuOXbfrCuHbWakQ84N6/5Lv7ePlvBptUgyLnZiqMpzHcPT3l3O95+L\n7A/ysjBnpIleCsz5hRQL42o=\n-----END PRIVATE KEY-----\n",
+  "client_email": "cloud-datastore-user@zollyapp.iam.gserviceaccount.com",
+  "client_id": "105561776292959892981",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-datastore-user%40zollyapp.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
