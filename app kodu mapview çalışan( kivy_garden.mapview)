@@ -1,0 +1,512 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Feb 15 20:32:37 2024
+
+@author: HP
+"""
+
+from kivy.app import App
+from kivy.lang import Builder
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.core.window import Window
+from kivy_garden.mapview import MapView
+
+
+
+Window.size = (350, 500)
+Window.clearcolor = (0.631, 0.749, 0.647)  # Set the window background color (light gray in this example)
+
+# Define the Kivy UI
+kv = """
+ScreenManager:
+    LoginScreen:
+    MainMenuScreen:
+    LocationScreen:
+    HealthScreen:
+    ActivityTrackingScreen:
+    SettingsScreen:
+    GoalsScreen:
+    AlertsScreen:
+    AreasScreen:
+
+<LoginScreen>:
+    name: 'login'
+            
+    Label:
+        text: 'Pet Tracker App'
+        font_size: 42
+        pos_hint: {'center_x': 0.5, 'center_y': 0.7}
+        color: 0.165, 0.169, 0.18
+        
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: None, None
+        size: 300, 200
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+
+        TextInput:
+            id: username_input
+            hint_text: 'Username'
+            size_hint_y: None
+            height: 40
+        TextInput:
+            id: password_input
+            hint_text: 'Password'
+            password: True
+            size_hint_y: None
+            height: 40
+        Button:
+            text: 'Login'
+            on_release: root.login(username_input.text, password_input.text)
+            background_normal: ''
+            background_down: ''
+            background_color: 0.165, 0.169, 0.18
+            color: 0.631, 0.749, 0.647
+            size_hint_y: None
+            height: 40
+        Label:
+            id: login_status
+            text: ''
+            color: 0.525, 0.996, 0.396
+
+<MainMenuScreen>:
+    name: 'main_menu'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+
+            Button:
+                text: 'Settings'
+                on_release: app.root.current = 'Settings'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Pet Tracker App'
+                on_release: app.root.current = 'main_menu'
+                size_hint_x: 1
+                halign: 'center'
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Logout'
+                on_release: app.root.current = 'login'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+        Button:
+            text: 'Location'
+            on_release: app.root.current = 'location'
+            background_normal: ''
+            background_down: ''
+            color: 0.792, 0.961, 0.741
+            background_color: 0.353, 0.353, 0.4, 0.4  
+        Button:
+            text: 'Health'
+            on_release: app.root.current = 'health'
+            background_normal: ''
+            background_down: ''
+            color: 0.792, 0.961, 0.741
+            background_color: 0.353, 0.353, 0.4, 0.7  
+        Button:
+            text: 'Activity Tracking'
+            on_release: app.root.current = 'activity_tracking'
+            background_normal: ''
+            background_down: ''
+            color: 0.792, 0.961, 0.741
+            background_color: 0.353, 0.353, 0.4, 1 
+
+
+<LocationScreen>:
+    name: 'location'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+
+            Button:
+                text: 'Settings'
+                on_release: app.root.current = 'Settings'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Back to Main Menu'
+                on_release: app.root.current = 'main_menu'
+                size_hint_x: 1
+                halign: 'center'
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Logout'
+                on_release: app.root.current = 'login'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+                
+        MapView:
+            lat: 37.7749  # Set the latitude of the initial map center
+            lon: -122.4194  # Set the longitude of the initial map center
+            zoom: 13  # Set the initial zoom level
+            size_hint: 1, 0.9  # Adjust the size of the map
+            
+
+<HealthScreen>:
+    name: 'health'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+
+            Button:
+                text: 'Settings'
+                on_release: app.root.current = 'Settings'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Back to Main Menu'
+                on_release: app.root.current = 'main_menu'
+                size_hint_x: 1
+                halign: 'center'
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Logout'
+                on_release: app.root.current = 'login'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+        BoxLayout:
+            orientation: 'vertical'
+        
+
+
+<ActivityTrackingScreen>:
+    name: 'activity_tracking'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+
+            Button:
+                text: 'Settings'
+                on_release: app.root.current = 'Settings'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Back to Main Menu'
+                on_release: app.root.current = 'main_menu'
+                size_hint_x: 1
+                halign: 'center'
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Logout'
+                on_release: app.root.current = 'login'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+        BoxLayout:
+            orientation: 'vertical'
+ 
+<SettingsScreen>:
+    name: 'Settings'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+
+            Button:
+                text: 'Settings'
+                on_release: app.root.current = 'Settings'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Back to Main Menu'
+                on_release: app.root.current = 'main_menu'
+                size_hint_x: 1
+                halign: 'center'
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Logout'
+                on_release: app.root.current = 'login'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+        BoxLayout:
+            orientation: 'vertical'
+            Button:
+                text: 'Safe Areas'
+                on_release: app.root.current = 'safe_areas'
+                background_normal: ''
+                background_down: ''
+                color: 0.353, 0.353, 0.4
+                background_color: 1,1,1, 0.6  
+            Button:
+                text: 'Alerts / Notifications'
+                on_release: app.root.current = 'alerts'
+                background_normal: ''
+                background_down: ''
+                color: 0.353, 0.353, 0.4
+                background_color: 1,1,1, 0.4  
+            Button:
+                text: 'Daily Goals'
+                on_release: app.root.current = 'daily_goals'
+                background_normal: ''
+                background_down: ''
+                color: 0.353, 0.353, 0.4
+                background_color: 1,1,1, 0.2
+            
+                
+            
+            
+<GoalsScreen>:
+    name: 'daily_goals'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+
+            Button:
+                text: 'Settings'
+                on_release: app.root.current = 'Settings'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Back to Main Menu'
+                on_release: app.root.current = 'main_menu'
+                size_hint_x: 1
+                halign: 'center'
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Logout'
+                on_release: app.root.current = 'login'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+        BoxLayout:
+            orientation: 'vertical'
+
+<AlertsScreen>:
+    name: 'alerts'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+
+            Button:
+                text: 'Settings'
+                on_release: app.root.current = 'Settings'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Back to Main Menu'
+                on_release: app.root.current = 'main_menu'
+                size_hint_x: 1
+                halign: 'center'
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Logout'
+                on_release: app.root.current = 'login'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+        BoxLayout:
+            orientation: 'vertical'
+
+<AreasScreen>:
+    name: 'safe_areas'
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 50
+
+            Button:
+                text: 'Settings'
+                on_release: app.root.current = 'Settings'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Back to Main Menu'
+                on_release: app.root.current = 'main_menu'
+                size_hint_x: 1
+                halign: 'center'
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+            
+            Button:
+                text: 'Logout'
+                on_release: app.root.current = 'login'
+                size_hint_x: None
+                width: 100
+                background_normal: ''
+                background_down: ''
+                background_color: 0.165, 0.169, 0.18
+                color: 0.631, 0.749, 0.647
+        BoxLayout:
+            orientation: 'vertical'
+    
+    
+        
+"""
+
+# Define the Screens
+class LoginScreen(Screen):
+    def login(self, username, password):
+        if username == 'admin' and password == 'adminpassword':
+            self.manager.current = 'main_menu'
+            self.ids.login_status.text = ""
+            self.ids.username_input.text = ""  # Clear the username field
+            self.ids.password_input.text = ""  # Clear the password field
+        else:
+            self.ids.login_status.text = "Incorrect username or password."
+        
+class MainMenuScreen(Screen):
+    pass
+
+class LocationScreen(Screen):
+    pass
+
+class HealthScreen(Screen):
+    pass
+
+class ActivityTrackingScreen(Screen):
+    pass
+
+class SettingsScreen(Screen):
+    pass
+class GoalsScreen(Screen):
+    pass
+
+class AlertsScreen(Screen):
+    pass
+
+class AreasScreen(Screen):
+    pass
+
+
+# Create the screen manager
+sm = ScreenManager()
+sm.add_widget(LoginScreen(name='login'))
+sm.add_widget(MainMenuScreen(name='main_menu'))
+sm.add_widget(LocationScreen(name='location'))
+sm.add_widget(HealthScreen(name='health'))
+sm.add_widget(ActivityTrackingScreen(name='activity_tracking'))
+sm.add_widget(SettingsScreen(name='Settings'))
+sm.add_widget(GoalsScreen(name='daily_goals'))
+sm.add_widget(AlertsScreen(name='alerts'))
+sm.add_widget(AreasScreen(name='safe_areas'))
+
+
+
+class MyApp(App):
+
+    def build(self):
+        return Builder.load_string(kv)
+    
+
+if __name__ == '__main__':
+    MyApp().run()
