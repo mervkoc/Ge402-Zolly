@@ -5,8 +5,8 @@
 #include <TinyGPS++.h>
 #include <Wire.h>
 
-const char* ssid = "DWF490988";
-const char* password="KU3CEDX5";
+const char* ssid = "Merv";
+const char* password="buguncuma1";
 const char* firestoreURL = "https://firestore.googleapis.com/v1/projects/zollyapp/databases/(default)/documents/your_collection/your_document?key=AIzaSyCCmaLQVfUrt_iyv6sM4TsCi14tBhCGB_Q";
 const char *cloudFunctionURL = "https://europe-west6-zollyapp.cloudfunctions.net/function-1";
 
@@ -16,11 +16,12 @@ TinyGPSPlus gps;
 HardwareSerial gpsSerial(1); // Use UART1 for GPS
 
 const int ADXL345 = 0x53; // The ADXL345 sensor I2C address
+const int heart=98;
 float X_out, Y_out, Z_out;
 int steps = 0;
 float lastX = 0, lastY = 0;
-const float stepThresholdX = 0.5; // Threshold for step detection in X-axis
-const float stepThresholdY = 0.5; // Threshold for step detection in Y-axis
+const float stepThresholdX = 0.2; // Threshold for step detection in X-axis
+const float stepThresholdY = 0.2; // Threshold for step detection in Y-axis
 
 
 void setup() {
@@ -47,9 +48,10 @@ void loop() {
     char c = gpsSerial.read();
     if (gps.encode(c)) {
       if (gps.location.isValid()) {
+        calculatestepsdata();
         String latitudeStr = String(gps.location.lat(), 6);
         String longitudeStr = String(gps.location.lng(), 6);
-        String gpsData = "{\"latitude\":" + latitudeStr + ",\"longitude\":" + longitudeStr + ",\"steps\":" + String(steps) + "}";
+        String gpsData = "{\"latitude\":" + latitudeStr + ",\"longitude\":" + longitudeStr + ",\"steps\":" + String(steps) +",\"heart\":"+String(heart)+ "}";
         sendGPSDataToCloud(gpsData);
         Serial.print("Latitude: ");
         Serial.println(latitudeStr);
@@ -63,6 +65,11 @@ void loop() {
   
   
   // Accelerometer reading for step detection
+
+ 
+}
+
+void calculatestepsdata(){
   Wire.beginTransmission(ADXL345);
   Wire.write(0x32); // ACCEL_XOUT_H register
   Wire.endTransmission(false);
@@ -82,8 +89,9 @@ void loop() {
   lastY = Y_out;
   
   delay(1000); // Delay for readability
-}
 
+
+}
 
 void sendGPSDataToCloud(String data) {
   if(WiFi.status() == WL_CONNECTED){
@@ -103,10 +111,3 @@ void sendGPSDataToCloud(String data) {
   }
   delay(10000); // Adjust based on how often you want to send data
 }
-
-
-
-
-
-
-
