@@ -1,0 +1,22 @@
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+exports.uploadGPSData = async (req, res) => {
+    const { latitude, longitude, steps ,heart} = req.body; // Include steps in the destructuring
+    const gpsData = {
+        lat: latitude,
+        lng: longitude,
+        steps: steps, 
+        heart: heart,// Add steps to the data object
+        timestamp: admin.firestore.FieldValue.serverTimestamp() // Adds a server-side timestamp
+    };
+
+    try {
+        // Use .set() to create/overwrite a specific document
+        await admin.firestore().collection('your_collection').doc('your_document').set(gpsData);
+        res.status(200).send('GPS and step data successfully written to Firestore');
+    } catch (error) {
+        console.error('Error writing GPS and step data to Firestore:', error);
+        res.status(500).send('Failed to write GPS and step data to Firestore');
+    }
+};
