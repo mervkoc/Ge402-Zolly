@@ -16,7 +16,6 @@ import threading
 from google.oauth2 import service_account
 from PIL import Image
 import time
-from haversine import haversine, Unit
 from kivy.uix.popup import Popup
 from mapview.geojson import GeoJsonMapLayer
 from kivy.uix.label import Label
@@ -49,6 +48,10 @@ def fetch_location_data(update_ui_callback):
             steps = data.get('steps', 0)  # Fetch steps
             heart = data.get('heart', 0)
             # Update the UI with the fetched data
+            
+            if lat=='N/A' or lng== 'N/A':
+                lat=39.872121
+                lng=32.751761
             update_ui_callback(lat, lng, steps,heart)
 
         else:
@@ -83,7 +86,7 @@ marker_source = "C:\\Users\\user\\Desktop\\bilkent\\4.yıl2.dönem\\Ge402Bitirme
 circlemarker_source="C:\\Users\\user\\Desktop\\bilkent\\4.yıl2.dönem\\Ge402Bitirme\\resized_circlemarker.png"
 
 Window.size = (350, 500)
-Window.clearcolor = (0.965, 0.949, 0.941)  # Set the window background color (light gray in this example)
+Window.clearcolor = (1,1,1)  # Set the window background color (light gray in this example)
 
 # Define the Kivy UI
 kv = """
@@ -99,18 +102,22 @@ ScreenManager:
         
 <LoginScreen>:
     name: 'login'
+    Image:
+        source: "C:/Users/user/Desktop/bilkent/4.yıl2.dönem/Ge402Bitirme/contour-linear-illustration-of-a-cat-and-a-dog-vector.jpg"
+
+        pos_hint: {'center_x': 0.5, 'center_y': 0.7}
             
     Label:
-        text: 'Pet Tracker App'
+        text: 'PetTracker App'
         font_size: 48
-        pos_hint: {'center_x': 0.5, 'center_y': 0.7}
-        color: 0.608, 0.71, 0.314
+        pos_hint: {'center_x': 0.5, 'center_y': 0.55}
+        color: 0.188, 0.616, 0
         
     BoxLayout:
         orientation: 'vertical'
         size_hint: None, None
         size: 300, 200
-        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        pos_hint: {'center_x': 0.5, 'center_y': 0.35}
 
 
         TextInput:
@@ -129,14 +136,14 @@ ScreenManager:
             on_release: root.login(username_input.text, password_input.text)
             background_normal: ''
             background_down: ''
-            background_color: 0.569, 0.408, 0.627
-            color: 0.965, 0.949, 0.941
+            background_color: 0,0,0
+            color: 1,1,1
             size_hint_y: None
             height: 40
         Label:
             id: login_status
             text: ''
-            color: 0.906, 0.737, 0.184
+            color: 0.769, 0.106, 0.106
 
 <MainMenuScreen>:
     name: 'main_menu'
@@ -154,8 +161,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Pet Tracker App'
@@ -164,8 +171,8 @@ ScreenManager:
                 halign: 'center'
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Logout'
@@ -174,32 +181,32 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
         Button:
             text: 'Location'
             font_size: '18sp'
             on_release: app.root.current = 'location'
             background_normal: ''
             background_down: ''
-            color: 0.965, 0.949, 0.941
-            background_color: 0.608, 0.71, 0.314, 0.9
+            color: 1,1,1
+            background_color: 0.188, 0.616, 0, 0.9
         Button:
             text: 'Health'
             font_size: '18sp'
             on_release: app.root.current = 'health'
             background_normal: ''
             background_down: ''
-            color: 0.965, 0.949, 0.941
-            background_color: 0.608, 0.71, 0.314, 0.7
+            color: 1,1,1
+            background_color: 0.188, 0.616, 0, 0.75
         Button:
             text: 'Activity Tracking'
             font_size: '18sp'
             on_release: app.root.current = 'activity_tracking'
             background_normal: ''
             background_down: ''
-            color: 0.965, 0.949, 0.941
-            background_color: 0.608, 0.71, 0.314, 0.5
+            color: 1,1,1
+            background_color: 0.188, 0.616, 0, 0.6
             
             
 <AlertDialog>:
@@ -230,8 +237,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Back to Main Menu'
@@ -240,8 +247,8 @@ ScreenManager:
                 halign: 'center'
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Logout'
@@ -250,8 +257,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
         
         MapView:
             id:mapview
@@ -275,8 +282,8 @@ ScreenManager:
                 height: 50
                 background_normal: ''
                 background_down: ''
-                background_color: 0.608, 0.71, 0.314
-                color: 0.965, 0.949, 0.941
+                background_color: 0.188, 0.616, 0
+                color: 1,1,1
                 on_release: root.update_safe_zone_radius(radius_input.text)
                  
                 
@@ -299,7 +306,7 @@ ScreenManager:
 <HeartBeatWidget@Widget>:
     canvas.before:
         Color:
-            rgba: 0.906, 0.737, 0.184, 1  
+            rgba: 0.769, 0.106, 0.106, 1  
         Ellipse:
             pos: self.center_x - self.size_x / 3.9, self.center_y - self.size_y / 5.3
             size: self.size_x/1.8, self.size_y/1.8
@@ -314,7 +321,7 @@ ScreenManager:
 <MapCiecleWidget@Widget>:
     canvas:
         Color:
-            rgba: 0.906, 0.737, 0.184, 0.4  
+            rgba: 0.769, 0.106, 0.106, 0.4  
         Ellipse:
             pos: self.center_x , self.center_y
             size: self.size_x, self.size_y
@@ -337,8 +344,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Back to Main Menu'
@@ -347,8 +354,8 @@ ScreenManager:
                 halign: 'center'
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Logout'
@@ -357,8 +364,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
         FloatLayout:
             orientation: 'horizontal'
             size_hint_y: None
@@ -375,7 +382,7 @@ ScreenManager:
                 font_size: '20sp'
                 size_hint_y: None
                 height: 100
-                color: 0.608, 0.71, 0.314
+                color: 0.188, 0.616, 0
         BoxLayout:
             orientation: 'horizontal'
             size_hint_y: None
@@ -399,8 +406,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Back to Main Menu'
@@ -409,8 +416,8 @@ ScreenManager:
                 halign: 'center'
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Logout'
@@ -419,19 +426,19 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
 
         Label:
             id: step_count
             text: 'Steps: 0'
             font_size: '20sp'
-            color: 0.608, 0.71, 0.314
+            color: 0.188, 0.616, 0
         Label:
             id: distance_tracked
             text: 'Distance: 0 meters'
             font_size: '20sp'
-            color: 0.608, 0.71, 0.314
+            color: 0.188, 0.616, 0
             
 
  
@@ -451,8 +458,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Back to Main Menu'
@@ -461,8 +468,8 @@ ScreenManager:
                 halign: 'center'
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Logout'
@@ -471,8 +478,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
         BoxLayout:
             orientation: 'vertical'
             Button:
@@ -481,16 +488,16 @@ ScreenManager:
                 on_release: app.root.current = 'alerts'
                 background_normal: ''
                 background_down: ''
-                color: 0.965, 0.949, 0.941
-                background_color: 0.608, 0.71, 0.314,0.7  
+                color: 1,1,1
+                background_color: 0.188, 0.616, 0,0.8  
             Button:
                 text: 'Daily Goals'
                 font_size: '18sp'
                 on_release: app.root.current = 'daily_goals'
                 background_normal: ''
                 background_down: ''
-                color: 0.965, 0.949, 0.941
-                background_color: 0.608, 0.71, 0.314,1
+                color: 1,1,1
+                background_color: 0.188, 0.616, 0,1
             
                 
             
@@ -511,8 +518,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Back to Main Menu'
@@ -521,8 +528,8 @@ ScreenManager:
                 halign: 'center'
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Logout'
@@ -531,8 +538,27 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: None
+            height: 100
+            TextInput:
+                id: goal_input
+                hint_text: 'Enter daily activity goal in number of steps'
+                input_filter: 'int'
+                size_hint_y: None
+                height: 50
+            Button:
+                text: 'Set Daily Goal'
+                size_hint_y: None
+                height: 50
+                background_normal: ''
+                background_down: ''
+                background_color: 0.188, 0.616, 0
+                color: 1,1,1
+                on_release: root.update_daily_goal(goal_input.text)
         BoxLayout:
             orientation: 'vertical'
 
@@ -552,8 +578,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Back to Main Menu'
@@ -562,8 +588,8 @@ ScreenManager:
                 halign: 'center'
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
             
             Button:
                 text: 'Logout'
@@ -572,8 +598,8 @@ ScreenManager:
                 width: 100
                 background_normal: ''
                 background_down: ''
-                background_color: 0.569, 0.408, 0.627
-                color: 0.965, 0.949, 0.941
+                background_color: 0,0,0
+                color: 1,1,1
         BoxLayout:
             orientation: 'vertical'
             ToggleButton:
@@ -584,13 +610,13 @@ ScreenManager:
                 height: 150
                 background_normal: ''
                 background_down: ''
-                color: 0.965, 0.949, 0.941
-                background_color: 0.608, 0.71, 0.314 
+                color: 1,1,1
+                background_color: 0.188, 0.616, 0 
                 on_state: root.on_toggle_button_state_geo(self.state)
             Label:
                 id: geo_alert_status
                 text: ''
-                color: 0.906, 0.737, 0.184
+                color: 0.769, 0.106, 0.106
             ToggleButton:
                 id: health alert
                 text: 'Health Alert'
@@ -599,13 +625,13 @@ ScreenManager:
                 height: 150
                 background_normal: ''
                 background_down: ''
-                color: 0.965, 0.949, 0.941
-                background_color: 0.608, 0.71, 0.314
+                color: 1,1,1
+                background_color: 0.188, 0.616, 0
                 on_state: root.on_toggle_button_state_health(self.state)
             Label:
                 id: health_alert_status
                 text: ''
-                color: 0.906, 0.737, 0.184
+                color: 0.769, 0.106, 0.106
             ToggleButton:
                 id: activity alert
                 text: 'Extreme Activity Alert'
@@ -614,13 +640,13 @@ ScreenManager:
                 height: 150
                 background_normal: ''
                 background_down: ''
-                color: 0.965, 0.949, 0.941
-                background_color: 0.608, 0.71, 0.314
+                color: 1,1,1
+                background_color: 0.188, 0.616, 0
                 on_state: root.on_toggle_button_state_activity(self.state)
             Label:
                 id: activity_alert_status
                 text: ''
-                color: 0.906, 0.737, 0.184
+                color: 0.769, 0.106, 0.106
 
 """
 
@@ -773,13 +799,16 @@ class LocationScreen(Screen):
             if self.marker:
                 self.ids.mapview.remove_widget(self.marker)
             # Create a new marker for the new location
+
             self.marker = MapMarkerPopup(lat=lat, lon=lng, source=marker_source)
             self.ids.mapview.add_widget(self.marker)
             
             # Center the map on the new marker
-            self.ids.mapview.center_on(lat, lng)
+        
             
-            distance = self.calculate_distance(lat, lng, *self.safe_zone_center)
+            self.ids.mapview.center_on(float(lat), float(lng))
+            
+            distance = self.calculate_distance(float(lat),float(lng), *self.safe_zone_center)
             print(f"Current location: ({lat}, {lng})")
             print(f"Safe zone center: {self.safe_zone_center}")
             print(f"Distance to safe zone: {distance * 111000:.2f} meters")
@@ -843,7 +872,21 @@ class ActivityTrackingScreen(Screen):
 class SettingsScreen(Screen):
     pass
 class GoalsScreen(Screen):
-    pass
+    daily_goal = 3000
+    def update_daily_goal(self, goal_text):
+        try:
+            self.alert_shown = False
+            self.daily_goal = int(goal_text) 
+            popup = Popup(title='Daily Goal Set!',
+                          content=Label(text='Daily goal set with {} steps!'.format(int(self.daily_goal))),
+                          size_hint=(None, None), size=(400, 200))
+            popup.open()
+        except ValueError:
+            popup = Popup(title='Daily Goal Cannot Be Defined',
+                          content=Label(text='Daily goal value error of steps.'),
+                          size_hint=(None, None), size=(400, 200))
+            popup.open()
+            
 
 
 
