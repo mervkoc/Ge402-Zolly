@@ -6,6 +6,7 @@ Created on Thu Feb 22 19:34:09 2024
 """
 
 from kivy.app import App
+from kivy.uix.progressbar import ProgressBar
 from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.animation import Animation
@@ -25,7 +26,7 @@ from kivy.properties import NumericProperty, ListProperty
 from kivy.uix.behaviors import ButtonBehavior
 import math
 
-global geo_state,glo_heart_rate
+global geo_state,glo_heart_rate,change_to_nb
 geo_state='normal'
 glo_heart_rate=120
 
@@ -58,6 +59,28 @@ def fetch_location_data(update_ui_callback):
             print('No such document!')
     except Exception as e:
         print(f'An error occurred: {e}')
+        
+def update_cloud_data(field, value):
+    try:
+        doc_ref = db.collection('your_collection').document('your_document')
+        doc = doc_ref.get()
+        if doc.exists:
+            data = doc.to_dict()
+            lat = data.get('lat', 0)
+            lng = data.get('lng', 0)
+            steps = data.get('steps', 0)  # Fetch steps
+            heart = data.get('heart', 0)
+        doc_ref.set({
+            field: value,
+            'lat': lat,
+            'lng' : lng,
+            'steps' : steps,
+            'heart' :heart
+        })
+        print("Document successfully updated!")
+    except Exception as e:
+        print(f'An error occurred: {e}')
+
  
 def resize_marker_image(source_path, output_path, size=(50, 50)):
     image = Image.open(source_path)
@@ -388,8 +411,21 @@ ScreenManager:
             size_hint_y: None
             height: 350
                 
-
+<CustomProgressBar>:
+    canvas:
+        Color:
+            rgba: 0.5, 0.5, 0.5, 1  # Gray color for the background
+        Rectangle:
+            size: self.width, dp(20)  # Thickness of the progress bar
+            pos: self.x, self.center_y - dp(5)  # Position the progress bar in the middle of the height
+        Color:
+            rgba: 0.188, 0.616, 0, 1  # Green color for the progress
+        Rectangle:
+            size: self.width * self.value/100, dp(20)  # Adjust width based on the progress
+            pos: self.pos[0], self.center_y - dp(5)  
+            
 <ActivityTrackingScreen>:
+    on_pre_enter: root.compare_goal_with_steps()
     name: 'activity_tracking'
     BoxLayout:
         orientation: 'vertical'
@@ -428,12 +464,20 @@ ScreenManager:
                 background_down: ''
                 background_color: 0,0,0
                 color: 1,1,1
-
+                
         Label:
             id: step_count
             text: 'Steps: 0'
             font_size: '20sp'
             color: 0.188, 0.616, 0
+        CustomProgressBar:
+            id: custom_progress_bar
+            max: 100
+            value: 10  # Initial value, will be updated dynamically
+            size_hint_y: 0.03
+            size_hint_x: 0.8  # Set the width of the progress bar
+            height: dp(10) 
+            pos_hint: {'center_x': 0.5}  
         Label:
             id: distance_tracked
             text: 'Distance: 0 meters'
@@ -540,6 +584,8 @@ ScreenManager:
                 background_down: ''
                 background_color: 0,0,0
                 color: 1,1,1
+                
+                
         BoxLayout:
             orientation: 'vertical'
             size_hint_y: None
@@ -750,7 +796,7 @@ class HealthScreen(Screen):
 class LocationScreen(Screen):
     marker = None  # Initialize a class variable to keep track of the current marker
     cicrclemarker = None
-    safe_zone_center = (39.872121, 32.751761)  # Predefined center for the safe zone
+    safe_zone_center = (39.872121, 32.761761)  # Predefined center for the safe zone
     safe_zone_radius = 0.01  # Default radius in degrees (adjust as needed)
     safe_zone_layer = None
     setting_safe_zone = False
@@ -764,7 +810,7 @@ class LocationScreen(Screen):
             self.marker = None
         # Start fetching data in a separate thread
         threading.Thread(target=self.fetch_location_data_continuously, args=()).start()
-        self.safe_zone_center = 39.872121, 32.751761
+        self.safe_zone_center = 39.872121, 32.761761
         self.safe_zone_layer = None  # Initialize safe_zone_layer here
         
 
@@ -815,6 +861,9 @@ class LocationScreen(Screen):
             if distance > self.safe_zone_radius and not self.alert_shown and geo_state=='normal':
                 self.show_alert(f'Location is {distance * 111000:.2f} meters to the safe center.')
                 self.alert_shown = True 
+                update_cloud_data('com',1)
+            if distance < self.safe_zone_radius:
+                update_cloud_data('com',0)
         # Schedule the UI update to run in the main thread
         from kivy.clock import Clock
         Clock.schedule_once(ui_update)
@@ -842,9 +891,30 @@ class LocationScreen(Screen):
 
 class AlertPopup(Popup):
     pass
+class CustomProgressBar(ProgressBar):
+    pass
 
 class ActivityTrackingScreen(Screen):
-    
+    def compare_goal_with_steps(self):
+        goal = App.get_running_app().root.get_screen('daily_goals').daily_goal
+        steps_count = int(self.ids.step_count.text.split(': ')[1])  # Extract steps count from the label text
+       
+        progress_percentage = (steps_count / goal) * 100
+        self.ids.custom_progress_bar.value = progress_percentage
+        
+        meters = int(steps_count*0.4)
+        self.ids.distance_tracked.text = f'SteDistance: {meters}'
+        if progress_percentage >= 100:
+            popup = Popup(title='Daily Goal!',
+                          content=Label(text='Congratulations!\nYou ve reached your daily goal!'),
+                          size_hint=(None, None), size=(400, 200))
+            popup.open()
+        if progress_percentage < 100:
+            popup = Popup(title='Daily Goal!',
+                          content=Label(text='Keep going!\nYou havent reached your daily goal yet.'),
+                          size_hint=(None, None), size=(400, 200))
+            popup.open()
+
     def on_enter(self, *args):
         
         super(ActivityTrackingScreen, self).on_enter(*args)
@@ -872,7 +942,7 @@ class ActivityTrackingScreen(Screen):
 class SettingsScreen(Screen):
     pass
 class GoalsScreen(Screen):
-    daily_goal = 3000
+    daily_goal = 1000
     def update_daily_goal(self, goal_text):
         try:
             self.alert_shown = False
