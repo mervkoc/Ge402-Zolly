@@ -1,0 +1,345 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <TinyGPS++.h>
+#include <HardwareSerial.h>
+#include <PulseSensorPlayground.h>
+#include <Wire.h>
+#include <TinyGPS++.h>
+
+HardwareSerial sim808(1); // RX, TX pins
+HardwareSerial gpsSerial(2); // Use UART2 for GPS
+TinyGPSPlus gps;
+int whichstate=1;
+const int PulseWire = A0; // Adjust if necessary
+PulseSensorPlayground pulseSensor;
+const int Threshold = 2000;
+const int ADXL345 = 0x53; // The ADXL345 sensor I2C address
+const int heart=98;
+String sim808durum="Open";
+String connectiontype="nb-iot";
+float X_out, Y_out, Z_out;
+int steps = 0;
+float lastX = 0, lastY = 0, lastZ=0;
+const float stepThresholdX = 255; // Threshold for step detection in X-axis
+const float stepThresholdY = 255; // Threshold for step detection in Y-axis
+const float stepThresholdZ = 0.8;
+const char* ssid = "Merv";
+const char* password="buguncuma1";
+const char* firestoreURL = "https://firestore.googleapis.com/v1/projects/zollyapp/databases/(default)/documents/your_collection/your_document?key=AIzaSyCCmaLQVfUrt_iyv6sM4TsCi14tBhCGB_Q";
+const char *cloudFunctionURL = "https://europe-west6-zollyapp.cloudfunctions.net/function-1";
+const char* cloudFunctionURLforread = "https://europe-west6-zollyapp.cloudfunctions.net/function2"; // URL for checking com status
+const int DTR_PIN = 47; // Change to your specific GPIO pin connected to DTR
+unsigned long previousMillis = 0; // Stores the last time the DTR pin was updated
+const long interval = 50; // Interval at which to set pin low (milliseconds)
+String latitude, longitude;
+int bpm=0;
+int bpm1,bpm2;
+
+void setup() {
+  Serial.begin(9600);
+  delay(1000);
+  pinMode(DTR_PIN, OUTPUT); // Initialize the digital pin as an output
+  sendATCommand("AT+CSCLK=1");
+  gpsSerial.begin(9600, SERIAL_8N1, 8, -1); // 
+  Serial.println("Initializing...");
+  pulseSensor.analogInput(PulseWire);
+  pulseSensor.setThreshold(Threshold);
+  pulseSensor.begin();
+  Wire.begin(); // Start I2C for ADXL345
+}
+
+void loop() {
+  Serial.print("state is:");
+  Serial.println(whichstate);
+  sim808durum="Open";
+  if (whichstate==0) {
+      putSIM808ToSleep();
+      setupwifi();
+    }
+  if (whichstate==1) {
+      wakeSIM808FromSleep();
+      delay(2000);
+      setupsim808();
+      setupGPRS();
+      delay(2000);
+    }
+  while (whichstate==1){
+    getData();
+    delay(100);
+    sendGPSData(latitude, longitude, steps, bpm);
+    delay(200);
+    checkComStatus(); 
+    if (whichstate==0) {
+      putSIM808ToSleep();
+      setupwifi();
+    }
+  }
+  while(whichstate==0){
+  getData();
+  sendDataToCloud(latitude, longitude, steps, bpm); // This function sends the data to your cloud
+  checkComStatuswifi();  
+
+  }
+}
+
+void clearSIM808Buffer() {
+  while (sim808.available()) {
+    char c = sim808.read();
+    Serial.write(c); // Optional: Echoes the SIM808 output to the Serial Monitor for debugging
+  }
+}
+
+void setupGPRS() {
+  sendATCommand("AT");
+  sendATCommand("AT+CPIN?");
+  sendATCommand("AT+CGATT=1");
+  sendATCommand("AT+CIPSHUT");
+  sendATCommand("AT+CIPSTATUS");
+  sendATCommand("AT+CIPMUX=0");
+  sendATCommand("AT+CSTT=\"internet\",\"\",\"\"");
+  sendATCommand("AT+CIICR");
+  sendATCommand("AT+CIFSR");
+}
+
+void sendGPSData(String latitude, String longitude, int steps, int bpm){
+  sendATCommand("AT+CIPSTART=\"TCP\",\"europe-west6-zollyapp.cloudfunctions.net\",80");
+  sendATCommand("AT+CIPSEND");
+
+  String postData = "{\"latitude\": \"" + latitude + "\", \"longitude\": \"" + longitude + "\", \"steps\": " + String(steps) + ", \"heart\": " + String(bpm) + "}";
+  String postRequest = "POST /function-1 HTTP/1.1\r\n";
+  postRequest += "Host: europe-west6-zollyapp.cloudfunctions.net\r\n";
+  postRequest += "Content-Length: " + String(postData.length()) + "\r\n";
+  postRequest += "Content-Type: application/json\r\n\r\n";
+  postRequest += postData + (char)26; // Append Ctrl+Z to indicate the end of the data
+
+  sim808.print(postRequest);
+  delay(2000); // Wait for the send to complete
+
+  sendATCommand("AT+CIPSHUT"); // Close the connection
+}
+
+
+void sendATCommand(String command) {
+  sim808.println(command);
+  Serial.println(command);
+  delay(1000); // Wait for the command to be processed
+  clearSIM808Buffer();
+  delay(100);
+}
+
+
+void checkComStatus() {
+  sendATCommand("AT");
+  sendATCommand("AT+CPIN?");
+  sendATCommand("AT+CGATT=1");
+  sendATCommand("AT+CIPSHUT");
+  sendATCommand("AT+CIPSTATUS");
+  sendATCommand("AT+CIPMUX=0");
+  sendATCommand("AT+CSTT=\"internet\",\"\",\"\"");
+  sendATCommand("AT+CIICR");
+  sendATCommand("AT+CIFSR");
+  delay(2000);
+  Serial.println("Checking com status...");
+  sendATCommand("AT+CIPSTART=\"TCP\",\"europe-west6-zollyapp.cloudfunctions.net\",80");
+  String getRequest = "GET /function2 HTTP/1.0\r\nHost: europe-west6-zollyapp.cloudfunctions.net\r\n\r\n";
+  
+  sendATCommand("AT+CIPSEND=" + String(getRequest.length() + 1));
+  sim808.print(getRequest);
+  sim808.write(26); // Ctrl+Z to end transmission
+
+  if (waitForResponse("\"com\":1",5000)) { // Adjust to match the exact expected response
+    Serial.println("COM is 1, activating nb-iot mode.");
+    whichstate=1;
+  } else {
+     Serial.println("COM is not 1, activating wifi mode.");
+    whichstate=0;
+  }
+  sendATCommand("AT+CIPSHUT");
+}
+
+void checkComStatuswifi() {
+  HTTPClient http;
+  Serial.println("Checking com status...");
+
+  http.begin(cloudFunctionURLforread); // Specify request destination
+  int httpCode = http.GET(); // Send the request
+
+  if (httpCode > 0) { // Check the returning status code
+    String payload = http.getString(); // Get the request response payload
+    Serial.println("Received response:");
+    Serial.println(payload);
+
+    // Check if the response contains "\"com\":1"
+    if (payload.indexOf("\"com\":1") >= 0) {
+      Serial.println("COM is 1, activating nb-iot mode.");
+      whichstate = 1;
+    } else {
+      Serial.println("COM is not 1, activating wifi mode.");
+      whichstate = 0;
+    }
+    Serial.print("State is: ");
+    Serial.println(whichstate);
+  } else {
+    Serial.println("Error in HTTP request");
+  }
+  http.end(); // Close connection
+}
+
+
+void sendDataToCloud(String latitude, String longitude, int steps, int bpm) {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(cloudFunctionURL);
+    http.addHeader("Content-Type", "application/json");
+
+    String postData = "{\"latitude\": \"" + latitude + "\", \"longitude\": \"" + longitude + "\", \"steps\": " + String(steps) + ", \"heart\": " + String(bpm) + "}";
+    int httpResponseCode = http.POST(postData);
+
+    if (httpResponseCode > 0) {
+      Serial.print("HTTP Response code: ");
+      Serial.println(httpResponseCode);
+    } else {
+      Serial.print("Error code: ");
+      Serial.println(httpResponseCode);
+    }
+    http.end();
+  }
+}
+void setupsim808(){
+  sim808.begin(9600, SERIAL_8N1, 17, 18); // RX=17, TX=18
+  Serial.println("Initializing...");
+  Serial.println("Sim808 ready!");
+}
+
+void setupwifi(){
+   Wire.begin(11, 12); // Initialize I2C communication
+  // Set ADXL345 in measuring mode
+  Wire.beginTransmission(ADXL345);
+  Wire.write(0x2D); // Access POWER_CTL Register
+  Wire.write(8); // Bit D3 High for measurement mode
+  Wire.endTransmission();
+  WiFi.begin(ssid,password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(200);
+    Serial.println("Connecting to WiFi...");
+  }
+  Serial.println("Connected to WiFi");
+}
+bool waitForResponse(String expected, unsigned long timeout) {
+  unsigned long startTime = millis();
+  String response = "";
+  while (millis() - startTime < timeout) {
+    while (sim808.available()) {
+  //    Serial.println("here");
+      char c = sim808.read();
+      response += c;
+    }
+    if (response.indexOf(expected) != -1) {
+  //    Serial.println("here 2");
+      Serial.println("Received response:");
+      Serial.println(response);
+      return true;
+    }
+  }
+  Serial.println("Timeout or wrong response");
+  Serial.println(response); // Print what was received for troubleshooting
+  return false;
+}
+void putSIM808ToSleep() {
+  digitalWrite(DTR_PIN, HIGH); // command to put sim808 into sleep mode 
+  delay(50);
+  sim808durum="Sleep";
+}
+
+void wakeSIM808FromSleep() {
+  digitalWrite(DTR_PIN, LOW);
+  delay(50);               // command to open sim808 from sleep mode 
+  Serial.println("Sim808 Active");
+  sim808durum="Open";
+  }
+
+void getData(){
+    TinyGPSPlus gps;
+    collectGPSData(gps);
+
+    if (gps.location.isValid()) {
+      latitude = String(gps.location.lat(), 6);
+      longitude = String(gps.location.lng(), 6);
+    } else {
+      latitude = "N/A";
+      longitude = "N/A";
+      Serial.println("GPS signal not available.");
+    }
+    calculateStepData();
+    bpm2=0;
+    for (int i = 0; i < 10; i++){
+      bpm =calculateBPM();
+      bpm1 =max(bpm,bpm1);
+      bpm2 +=bpm;
+    } 
+    bpm2 /=10;
+    bpm = (bpm1 + 2*bpm2)/3;
+    Serial.print("Latitude: ");
+    Serial.println(latitude);
+    Serial.print("Longitude: ");
+    Serial.println(longitude);
+    Serial.print("Total Steps: ");
+    Serial.println(steps);
+    Serial.print("Heart Rate: ");
+    Serial.println(bpm);
+}
+
+
+void collectGPSData(TinyGPSPlus& gps) {
+  while (gpsSerial.available() > 0) {
+    char c = gpsSerial.read();
+    gps.encode(c);
+  }
+}
+
+
+
+void calculateStepData() {
+
+  Wire.beginTransmission(ADXL345);
+  Wire.write(0x32); // ACCEL_XOUT_H register
+  Wire.endTransmission(false);
+  Wire.requestFrom(ADXL345, 6, true);
+    X_out = (Wire.read() | Wire.read() << 8) / 256.0;
+    Y_out = (Wire.read() | Wire.read() << 8) / 256.0;
+    Z_out = (Wire.read() | Wire.read() << 8) / 256.0;
+    
+    if (abs(Z_out - lastZ) > stepThresholdZ && (abs(X_out - lastX) > stepThresholdX || abs(Y_out - lastY) > stepThresholdY)) {
+      steps++;
+      Serial.print("Step Detected. Total Steps: ");
+      Serial.println(steps);
+      Serial.println(stepThresholdX);
+  
+
+  }
+  
+  lastX = X_out;
+  lastY = Y_out;
+
+}
+
+
+int calculateBPM() {
+  if (pulseSensor.sawStartOfBeat()) {
+    return pulseSensor.getBeatsPerMinute();
+  }
+  return 0; 
+  // Return 0 if no beat is detected
+}
+
+void lostdogmode(){
+    collectGPSData(gps);
+    if (gps.location.isValid()) {
+      latitude = String(gps.location.lat(), 6);
+      longitude = String(gps.location.lng(), 6);
+    } else {
+      latitude = "N/A";
+      longitude = "N/A";
+      Serial.println("GPS signal not available.");
+    }
+}
