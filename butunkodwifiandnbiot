@@ -16,13 +16,14 @@ const int Threshold = 2000;
 const int ADXL345 = 0x53; // The ADXL345 sensor I2C address
 const int heart=98;
 String sim808durum="Open";
+String connectiontype="nb-iot";
 float X_out, Y_out, Z_out;
 int steps = 0;
 float lastX = 0, lastY = 0, lastZ=0;
-const float stepThresholdX = 255; // Threshold for step detection in X-axis
-const float stepThresholdY = 255; // Threshold for step detection in Y-axis
+const float stepThresholdX = 250; // Threshold for step detection in X-axis
+const float stepThresholdY = 250; // Threshold for step detection in Y-axis
 const float stepThresholdZ = 0.8;
-const char* ssid = "EE-102";
+const char* ssid = "Merv";
 const char* password="buguncuma1";
 const char* firestoreURL = "https://firestore.googleapis.com/v1/projects/zollyapp/databases/(default)/documents/your_collection/your_document?key=AIzaSyCCmaLQVfUrt_iyv6sM4TsCi14tBhCGB_Q";
 const char *cloudFunctionURL = "https://europe-west6-zollyapp.cloudfunctions.net/function-1";
@@ -32,6 +33,7 @@ unsigned long previousMillis = 0; // Stores the last time the DTR pin was update
 const long interval = 50; // Interval at which to set pin low (milliseconds)
 String latitude, longitude;
 int bpm=0;
+int bpm1,bpm2;
 
 void setup() {
   Serial.begin(9600);
@@ -51,7 +53,9 @@ void loop() {
   Serial.println(whichstate);
   sim808durum="Open";
   while (whichstate==1){
+    if(connectiontype=="wifi"){
     wakeSIM808FromSleep();
+    }
     delay(2000);
     setupsim808();
     setupGPRS();
@@ -61,13 +65,17 @@ void loop() {
     sendGPSData(latitude, longitude, steps, bpm);
     delay(200);
     checkComStatus(); 
+    connectiontype="nb-iot";
   }
   while(whichstate==0){
-  putSIM808ToSleep();
-  setupwifi();
-  getData();
-  sendDataToCloud(latitude, longitude, steps, bpm); // This function sends the data to your cloud
-  checkComStatuswifi();   
+    if(connectiontype=="nb-iot"){
+    putSIM808ToSleep();
+    setupwifi();
+    }
+    getData();
+    sendDataToCloud(latitude, longitude, steps, bpm); // This function sends the data to your cloud
+    checkComStatuswifi();   
+    connectiontype="wifi";
   }
 }
 
@@ -201,7 +209,13 @@ void setupsim808(){
 }
 
 void setupwifi(){
-  WiFi.begin(ssid);
+   Wire.begin(11, 12); // Initialize I2C communication
+  // Set ADXL345 in measuring mode
+  Wire.beginTransmission(ADXL345);
+  Wire.write(0x2D); // Access POWER_CTL Register
+  Wire.write(8); // Bit D3 High for measurement mode
+  Wire.endTransmission();
+  WiFi.begin(ssid,password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(200);
     Serial.println("Connecting to WiFi...");
@@ -254,8 +268,14 @@ void getData(){
       Serial.println("GPS signal not available.");
     }
     calculateStepData();
-    bpm = calculateBPM();
-    bpm=bpm/3;
+    bpm2=0;
+    for (int i = 0; i < 10; i++){
+      bpm =calculateBPM();
+      bpm1 =max(bpm,bpm1);
+      bpm2 +=bpm;
+    } 
+    bpm2 /=10;
+    bpm = (bpm1 + 2*bpm2)/3;
     Serial.print("Latitude: ");
     Serial.println(latitude);
     Serial.print("Longitude: ");
